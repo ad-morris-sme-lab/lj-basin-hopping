@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools==75.6.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lj-basin-hopping"
+version = "1.0.0"
+description = "Reproducible basin-hopping optimization for the 13-atom Lennard-Jones cluster"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy==2.5.4; python_version >= '3.12'",
+  "numpy==1.26.4; python_version < '3.12'",
+  "scipy==1.18.1; python_version >= '3.12'",
+  "scipy==1.15.3; python_version < '3.12'",
+  "matplotlib==3.11.2; python_version >= '3.11'",
+  "matplotlib==3.10.9; python_version < '3.11'",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
