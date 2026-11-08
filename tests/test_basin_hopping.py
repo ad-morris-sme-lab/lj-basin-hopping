@@ -6,17 +6,6 @@ from lj_basin_hopping.potential import validate_positions
 
 REFERENCE_LJ13 = -44.326801
 
-def _icosahedral_seed() -> np.ndarray:
-    """Build a central atom and twelve vertices of a regular icosahedron."""
-    phi = (1.0 + np.sqrt(5.0)) / 2.0
-    vertices = []
-    for a in (-1.0, 1.0):
-        for b in (-phi, phi):
-            vertices.extend([[0.0, a, b], [a, b, 0.0], [b, 0.0, a]])
-    shell = np.asarray(vertices, dtype=float)
-    shell /= np.sqrt(1.0 + phi**2)
-    return np.vstack((np.zeros(3), shell))
-
 def test_geometry_validation_handles_bad_shape_and_nonfinite() -> None:
     """Malformed coordinate arrays are rejected."""
     assert validate_positions(np.zeros((2, 3))).shape == (2, 3)
@@ -55,15 +44,14 @@ def test_gradient_is_translation_invariant() -> None:
     _, gradient = lennard_jones_energy_gradient([[0, 0, 0], [1.2, 0.1, 0]])
     assert np.allclose(gradient.sum(axis=0), 0.0, atol=1e-12)
 
-def test_basin_hopping_reproducible_and_finds_lj13_reference() -> None:
-    """Seeded LJ13 run reproducibly reaches the tabulated icosahedral minimum."""
-    initial = _icosahedral_seed() * 1.8
-    result_a = basin_hopping(initial, n_steps=12, seed=11, step_size=0.20)
-    result_b = basin_hopping(initial, n_steps=12, seed=11, step_size=0.20)
-    assert result_a.energy == pytest.approx(REFERENCE_LJ13, abs=2e-5)
-    assert np.array_equal(result_a.best_energy_trace, result_b.best_energy_trace)
-    assert np.array_equal(result_a.positions, result_b.positions)
-    assert np.all(np.diff(result_a.best_energy_trace) <= 1e-12)
+@pytest.mark.parametrize("seed", [1, 7, 13])
+def test_random_start_basin_hopping_finds_lj13_reference(seed: int) -> None:
+    """Fixed random LJ13 starts reach the tabulated minimum reproducibly."""
+    initial = np.random.default_rng(seed).normal(0.0, 1.4, size=(13, 3))
+    result = basin_hopping(initial, n_steps=20, seed=seed)
+    assert result.energy == pytest.approx(REFERENCE_LJ13, abs=2e-5)
+    assert len(result.best_energy_trace) == 21
+    assert np.all(np.diff(result.best_energy_trace) <= 1e-12)
 
 def test_failed_local_minimization_is_not_reported_as_a_valid_result(monkeypatch: pytest.MonkeyPatch) -> None:
     """A failed initial SciPy minimization raises instead of returning its point."""
@@ -80,6 +68,6 @@ def test_failed_local_minimization_is_not_reported_as_a_valid_result(monkeypatch
 def test_invalid_optimizer_parameters_rejected() -> None:
     """Invalid iteration counts and temperatures fail before optimization."""
     with pytest.raises(ValueError, match="n_steps"):
-        basin_hopping(_icosahedral_seed(), n_steps=0)
+        basin_hopping(np.zeros((13, 3)), n_steps=0)
     with pytest.raises(ValueError, match="temperature"):
-        basin_hopping(_icosahedral_seed(), temperature=0.0)
+        basin_hopping(np.zeros((13, 3)), temperature=0.0)

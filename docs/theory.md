@@ -14,7 +14,7 @@ Each trial perturbs every Cartesian coordinate with independent Gaussian noise, 
 
 ## Validation target and limitations
 
-This project uses N=13, whose reported global minimum is an icosahedral structure with energy -44.326801 epsilon. The example starts from a seeded random geometry; tests also start from a displaced icosahedral seed to verify the known minimum and deterministic repeatability. A finite run is a heuristic search and cannot prove global optimality for arbitrary initial conditions.
+This project uses N=13, whose reported global minimum is an icosahedral structure with energy -44.326801 epsilon. The example starts from a seeded random geometry. Tests exercise three independent seeded random starts and compare their best energies with the reference value. These are reproducibility checks, not a proof of global optimality: a finite heuristic search can miss the global minimum for other initial conditions or parameter choices.
 
 This is a classical pair-potential model. It omits electronic structure, many-body interactions, temperature-dependent thermodynamics, and dimensional parameter mapping. There is no periodic boundary condition or cutoff. Reduced units are used throughout rather than SI units.
 

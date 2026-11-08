@@ -23,3 +23,5 @@ jobs:
           python -m pip install --no-deps -e .
       - name: Run tests
         run: python -m pytest -q
+      - name: Run example smoke test
+        run: python examples/basin_hopping_lj13.py --steps 2

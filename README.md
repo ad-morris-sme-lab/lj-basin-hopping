@@ -29,7 +29,18 @@ python examples/basin_hopping_lj13.py
 python -m pytest -q
 ```
 
+Example output with the default seed:
+
+```text
+LJ13 best energy: -44.326801 epsilon
+Reference energy: -44.326801 epsilon
+Absolute error: 4.195e-07 epsilon
+Accepted moves: 29/80
+```
+
 The example uses a seeded random start, so its output is deterministic for the pinned numerical stack. It reports the best energy found, the reference energy, the absolute difference, and accepted moves. To save an optional convergence plot, pass a path: `python examples/basin_hopping_lj13.py --plot convergence.png`.
+
+The test suite also checks three fixed random initial geometries (seeds 1, 7, and 13); all three reach the reference energy within 20 basin-hopping steps on the tested stack.
 
 Reference LJ13 minimum: `-44.326801 epsilon`. Lengths are in sigma, energies in epsilon, and reduced temperature is k_B T / epsilon. The heuristic search can find a local minimum and does not guarantee discovery of the global minimum for every random start or finite run length.
 
