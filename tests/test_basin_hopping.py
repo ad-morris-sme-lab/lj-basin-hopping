@@ -65,6 +65,18 @@ def test_basin_hopping_reproducible_and_finds_lj13_reference() -> None:
     assert np.array_equal(result_a.positions, result_b.positions)
     assert np.all(np.diff(result_a.best_energy_trace) <= 1e-12)
 
+def test_failed_local_minimization_is_not_reported_as_a_valid_result(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A failed initial SciPy minimization raises instead of returning its point."""
+    from scipy.optimize import OptimizeResult
+    import lj_basin_hopping.optimizer as optimizer
+
+    def failed_minimize(*args: object, **kwargs: object) -> OptimizeResult:
+        return OptimizeResult(x=np.zeros(6), success=False, message="iteration limit")
+
+    monkeypatch.setattr(optimizer, "minimize", failed_minimize)
+    with pytest.raises(RuntimeError, match="did not converge"):
+        basin_hopping([[0, 0, 0], [1.2, 0, 0]], n_steps=1)
+
 def test_invalid_optimizer_parameters_rejected() -> None:
     """Invalid iteration counts and temperatures fail before optimization."""
     with pytest.raises(ValueError, match="n_steps"):

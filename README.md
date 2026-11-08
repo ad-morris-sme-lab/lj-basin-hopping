@@ -8,17 +8,19 @@ A reproducible global-search demonstration that builds on a pairwise Lennard-Jon
 
 Basin hopping is a natural next step after calculating Lennard-Jones energies because it uses the energy and gradient to search across multiple local minima. I chose N=13 because it is small enough for fast, reproducible runs and has a well-established icosahedral global-minimum energy for validation.
 
-## Install
+## How to run locally
 
-Python 3.10 or newer is supported. Dependencies are pinned with Python-version markers for compatible wheels.
+The following commands create a fresh Conda environment, install the project, run the example, and execute the tests:
 
-```bash
-python -m venv .venv
-# Windows PowerShell: .venv\Scripts\Activate.ps1
-# macOS/Linux: source .venv/bin/activate
-python -m pip install -r requirements.txt
+```powershell
+conda create -n lj-basin-hopping -c conda-forge python=3.12 numpy=2.5.4 scipy=1.18.1 matplotlib=3.11.2 pytest=9.2.0 pip
+conda activate lj-basin-hopping
 python -m pip install -e .
+python examples/basin_hopping_lj13.py
+python -m pytest -q
 ```
+
+For a standard virtual environment, install the pinned versions from `requirements.txt` instead.
 
 ## Run
 
@@ -31,7 +33,23 @@ The example uses a seeded random start, so its output is deterministic for the p
 
 Reference LJ13 minimum: `-44.326801 epsilon`. Lengths are in sigma, energies in epsilon, and reduced temperature is k_B T / epsilon. The heuristic search can find a local minimum and does not guarantee discovery of the global minimum for every random start or finite run length.
 
-## Theory and citation
+## Abstract
+
+This project implements a reproducible basin-hopping search for the 13-particle Lennard-Jones cluster. Each random displacement is followed by analytic-gradient L-BFGS-B relaxation, and a Metropolis criterion controls moves between local minima. The seeded example recovers the reported icosahedral LJ13 minimum near -44.326801 in reduced energy units. Tests cover the pair minimum, gradient consistency, translational invariance, malformed geometries, deterministic optimization, and local-minimizer failure handling. The calculation uses classical pairwise interactions in reduced units and is intended as a compact teaching example; finite search effort does not certify global optimality for arbitrary initial structures.
+
+## Cite this work
+
+```bibtex
+@software{lj_basin_hopping_2026,
+  author = {{Lennard-Jones Basin-Hopping contributors}},
+  title = {Basin-Hopping Optimization of an LJ13 Cluster},
+  version = {1.0.0},
+  year = {2026},
+  url = {https://github.com/ad-morris-sme-lab/lj-basin-hopping}
+}
+```
+
+## Theory and references
 
 See [docs/theory.md](docs/theory.md) for the model, equations, assumptions, and references. The reference N=13 minimum is listed by the [Cambridge Cluster Database](https://doye.chem.ox.ac.uk/jon/structures/LJ/tables.150.html). Basin hopping is described by Wales and Doye, [J. Phys. Chem. A 101, 5111-5116 (1997)](https://doi.org/10.1021/jp970984n).
 

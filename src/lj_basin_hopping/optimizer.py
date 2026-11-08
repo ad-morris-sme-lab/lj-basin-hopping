@@ -34,6 +34,8 @@ def _local_minimum(positions: FloatArray, max_iterations: int) -> tuple[float, F
         return energy, gradient.ravel()
     result = minimize(objective, positions.ravel(), method="L-BFGS-B", jac=True,
                       options={"maxiter": max_iterations, "ftol": 1e-12, "gtol": 1e-7})
+    if not result.success:
+        raise RuntimeError(f"L-BFGS-B did not converge: {result.message}")
     coords = result.x.reshape(atom_count, 3)
     coords -= np.mean(coords, axis=0)
     energy, _ = lennard_jones_energy_gradient(coords)
@@ -75,6 +77,8 @@ def basin_hopping(
     ------
     ValueError
         If the initial geometry or search parameters are invalid.
+    RuntimeError
+        If the initial local minimization fails to converge.
     """
     positions = validate_positions(initial_positions).copy()
     if isinstance(n_steps, bool) or not isinstance(n_steps, int) or n_steps < 1:
@@ -93,7 +97,11 @@ def basin_hopping(
     for _ in range(n_steps):
         proposal = current_positions + rng.normal(0.0, step_size, current_positions.shape)
         proposal -= np.mean(proposal, axis=0)
-        proposal_energy, proposal_positions = _local_minimum(proposal, local_max_iterations)
+        try:
+            proposal_energy, proposal_positions = _local_minimum(proposal, local_max_iterations)
+        except RuntimeError:
+            trace.append(best_energy)
+            continue
         delta_energy = proposal_energy - current_energy
         if delta_energy <= 0.0 or rng.random() < math.exp(-delta_energy / temperature):
             current_energy, current_positions = proposal_energy, proposal_positions
